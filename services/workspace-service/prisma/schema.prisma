@@ -71,6 +71,7 @@ type Plan {
 model User {
   id         String              @id @default(auto()) @map("_id") @db.ObjectId
   uid        String              @unique
+  username   String              @unique
   workspaces MemberOnWorkspace[] @relation("joined-workspaces")
   activities ActivityLog[]
 }
@@ -102,6 +103,7 @@ model GuestOnWorkspace {
 }
 
 enum MemberAccessLevel {
+  owner
   admin
   member
 }
