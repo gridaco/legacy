@@ -1,21 +1,23 @@
 import { Controller, Get, Param, UseGuards } from "@nestjs/common";
-import { WorkspaceManagementService } from "./workspace-manage.service";
+import { WorkspaceManagementService } from "./workspace.service";
 
-@Controller("workspace")
+@Controller("/")
 export class WorkspaceManagementController {
   constructor(private readonly service: WorkspaceManagementService) {}
+
   @Get("/")
   listWorkspaces() {
-    const userid = ""; // todo add auth
-    this.service.listWorkspaces({
+    const userid = ""; // TODO: add auth
+    return this.service.myworkspace({
       user: userid,
     });
   }
 
   @Get("/last")
   getLastUsedWorkspace() {
-    this.service.getWorkspace({
-      id: workspaceid,
+    const userid = ""; // TODO: add auth
+    this.service.getLastWorkspace({
+      user: userid,
     });
   }
 

@@ -5,6 +5,18 @@ import { PrismaService } from "../_prisma/prisma.service";
 export class WorkspaceManagementService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async myworkspace(p: { user: string }) {
+    const allworkspaces = await this.listWorkspaces(p);
+    const myworkspace = await this.getPersonalWorkspace(p);
+    const lastworkspace = await this.getLastWorkspace(p);
+
+    return {
+      workspaces: allworkspaces,
+      personal: myworkspace,
+      current: lastworkspace,
+    };
+  }
+
   async listWorkspaces(p: { user: string }) {
     const list = await this.prisma.workspace.findMany({
       where: {
@@ -24,7 +36,7 @@ export class WorkspaceManagementService {
     return workspace;
   }
 
-  async getPrimaryWorkspace() {
+  async getLastWorkspace(p: { user: string }) {
     // primary = last used
     const userid = "";
     const workspace = await this.prisma.workspace.findFirst({
@@ -39,7 +51,7 @@ export class WorkspaceManagementService {
     return workspace;
   }
 
-  async getPersonalWorkspace() {
+  async getPersonalWorkspace(p: { user: string }) {
     // personal = default created under user's name
   }
 
