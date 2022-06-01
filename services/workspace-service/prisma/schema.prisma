@@ -2,16 +2,17 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 model Workspace {
-  id String @id @default(uuid())
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
   displayName String
 
@@ -20,29 +21,28 @@ model Workspace {
 
   //* accessor name
   //* name used for accessing configuration of this project by template syntax.
-  //* e.g. - BRIDGED -> so it can be reference on other projects like so,
-  //* "Hello ! {BRIDGED.SOME_SHARED_KEY}, great to use shared variables.")
+  //* e.g. - GRIDA -> so it can be reference on other projects like so,
+  //* "Hello ! {GRIDA.SOME_SHARED_KEY}, great to use shared variables.")
   accessorName String @unique
 
-  logo String
+  logo String?
 
-  avatar String
-
-  private Boolean @default(true)
+  avatar String?
 
   website String?
 
+  // public twitter account username to be displayed on workspace page (for other visitors)
   twitter String?
 
-  plan String @default("free")
+  plan Plan
 
   // the preview (cover) image set by eidtor, if non set, showing the default screen's perview, or bridged's default asset
   // previewImage String
 
-  billingEmail String
+  billingEmail String?
 
   // last update of this project's asset / scene
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 
   // the registration date of this project
   createdAt DateTime @default(now())
@@ -56,22 +56,45 @@ model Workspace {
   // region = relations
   activities ActivityLog[]
 
-  members MembersOnWorkspace[]
-  guests  GuestsOnWorkspace[]
+  members     MemberOnWorkspace[]
+  guests      GuestOnWorkspace[]
   invitations Invitation[]
-  domains Domain[]
+  domains     Domain[]
 }
 
-model MembersOnWorkspace {
-  id          String            @id @default(uuid())
+// nested model
+type Plan {
+  paid           Boolean @default(false)
+  subscriptionId String?
+}
+
+model User {
+  id         String              @id @default(auto()) @map("_id") @db.ObjectId
+  uid        String              @unique
+  workspaces MemberOnWorkspace[] @relation("joined-workspaces")
+  activities ActivityLog[]
+}
+
+model MemberOnWorkspace {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
   workspace   Workspace         @relation(fields: [workspaceID], references: [id])
-  workspaceID String            @unique
-  userID      String            @unique
+  workspaceID String
+  user        User              @relation("joined-workspaces", fields: [userID], references: [id])
+  userID      String
   level       MemberAccessLevel @default(member)
+  // #region profile
+  profile     MemberProfile
+  // #endregion profile
 }
 
-model GuestsOnWorkspace {
-  id          String    @id @default(uuid())
+type MemberProfile {
+  // display name to use on (per) workspace
+  name   String
+  avatar String?
+}
+
+model GuestOnWorkspace {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   workspace   Workspace @relation(fields: [workspaceID], references: [id])
   workspaceID String    @unique
   userID      String    @unique
@@ -84,21 +107,22 @@ enum MemberAccessLevel {
 }
 
 model ActivityLog {
-  id           String    @id @default(uuid())
-  userID       String
-  workspace    Workspace @relation(fields: [workspaceID], references: [id])
-  workspaceID  String
-  signinAt     DateTime  @default(now())
-  lastActiveAt DateTime  @updatedAt
-  active       Boolean   @default(true) // defaults to true since the creation happens on signin.
-  ip           String?
-  ua           String?
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  user        User      @relation(fields: [userID], references: [id])
+  userID      String
+  workspace   Workspace @relation(fields: [workspaceID], references: [id])
+  workspaceID String
+  event       String
+  data        Json?
+  at          DateTime  @default(now())
+  ip          String?
+  ua          String?
 }
 
-model Invitation{
-  id String @id @default(uuid())
+model Invitation {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  workspace Workspace @relation(fields: [workspaceID], references: [id])
+  workspace   Workspace @relation(fields: [workspaceID], references: [id])
   workspaceID String
 
   email String @unique
@@ -107,7 +131,7 @@ model Invitation{
   code String @unique
 
   // the invitation status
-  status String @default("pending")
+  status InvitationStatus @default(pending)
 
   // the invitation type
   type String @default("invitation")
@@ -119,10 +143,17 @@ model Invitation{
   updatedAt DateTime @updatedAt
 }
 
-model Domain{
-  id String @id @default(uuid())
+enum InvitationStatus {
+  pending
+  accepted
+  rejected
+  expired
+}
 
-  workspace Workspace @relation(fields: [workspaceID], references: [id])
+model Domain {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  workspace   Workspace @relation(fields: [workspaceID], references: [id])
   workspaceID String
 
   name String @unique

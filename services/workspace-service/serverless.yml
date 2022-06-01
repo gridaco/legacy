@@ -18,7 +18,7 @@ custom:
     stage: production
     createRoute53Record: true
   serverless-offline:
-    httpPort: 4007
+    httpPort: 4401
 
 provider:
   name: aws
