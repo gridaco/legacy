@@ -8,8 +8,10 @@ export class WorkspaceManagementController {
   @Get("/")
   listWorkspaces() {
     const userid = ""; // TODO: add auth
-    return this.service.myworkspace({
-      user: userid,
+    return this.service.me({
+      // TODO:
+      // @ts-ignore
+      user: { uid: userid },
     });
   }
 
@@ -17,7 +19,7 @@ export class WorkspaceManagementController {
   getLastUsedWorkspace() {
     const userid = ""; // TODO: add auth
     this.service.getLastWorkspace({
-      user: userid,
+      uid: userid,
     });
   }
 
