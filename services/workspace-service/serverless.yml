@@ -14,8 +14,8 @@ custom:
     certificateName: "*.workspaces.services.grida.co"
     hostedZoneId: us-west-1
     basePath: ""
-    stage: production
     createRoute53Record: true
+    stage: production
   serverless-offline:
     httpPort: 4401
     noPrependStageInUrl: true
