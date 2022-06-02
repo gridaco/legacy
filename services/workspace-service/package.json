@@ -36,6 +36,7 @@
     "aws-serverless-express": "^3.3.8",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
+    "cookie-parser": "^1.4.6",
     "nanoid": "^3.1.16",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

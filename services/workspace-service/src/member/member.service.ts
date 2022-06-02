@@ -7,11 +7,19 @@ import { PrismaService } from "../_prisma/prisma.service";
 export class MemberService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async registerMember({ uid }: { uid: string }) {
-    // TODO: fetch me from accounts-services
-    const gridauser = {
-      username: "",
-    };
+  /**
+   * 1. register a Grida user to workspace services. (if non exsits)
+   * 2. create a workspace for the user (creates personal workspace).
+   */
+  async registerMember({
+    uid,
+    username,
+    avatar,
+  }: {
+    uid: string;
+    username: string;
+    avatar?: string;
+  }) {
     //
     let wssuser: User = await this.prisma.user.findUnique({
       where: { uid: uid },
@@ -22,45 +30,56 @@ export class MemberService {
       wssuser = await this.prisma.user.create({
         data: {
           uid: uid,
-          username: gridauser.username,
-        },
-      });
-
-      const { id: userID } = wssuser;
-
-      // create personal workspace initially
-      await this.prisma.workspace.create({
-        data: {
-          plan: {
-            paid: false, // TODO: use data from accounts-services. (since this is a personal workspace)
-          },
-          displayName: gridauser.username,
-          name: gridauser.username,
-          accessorName: gridauser.username,
-          members: {
-            create: {
-              user: {
-                connect: {
-                  id: wssuser.id,
-                },
-              },
-              level: "owner",
-              profile: {
-                name: gridauser.username,
-              },
-            },
-          },
-          activities: {
-            createMany: {
-              data: [
-                createActivityEvent({ event: "workspace-created", userID }),
-                createActivityEvent({ event: "member-joined", userID }),
-              ],
-            },
-          },
+          username: username,
         },
       });
     }
+
+    const { id: userID } = wssuser;
+
+    // create personal workspace initially
+    const personalWorkspace = await this.prisma.workspace.create({
+      data: {
+        plan: {
+          paid: false, // TODO: use data from accounts-services. (since this is a personal workspace)
+        },
+        displayName: username,
+        name: username,
+        accessorName: username,
+        avatar: avatar,
+        members: {
+          create: {
+            user: {
+              connect: {
+                id: wssuser.id,
+              },
+            },
+            level: "owner",
+            profile: {
+              name: username,
+              avatar: avatar,
+            },
+          },
+        },
+        activities: {
+          createMany: {
+            data: [
+              createActivityEvent({ event: "workspace-created", userID }),
+              createActivityEvent({ event: "member-joined", userID }),
+            ],
+          },
+        },
+      },
+      include: {
+        members: true,
+      },
+    });
     //
+
+    return {
+      workspace: personalWorkspace,
+      user: wssuser,
+      member: personalWorkspace.members[0],
+    };
   }
 }

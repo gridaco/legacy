@@ -1,17 +1,17 @@
-import { Controller, Get, Param, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Req, UseGuards } from "@nestjs/common";
+import { GridaAccountAuthGuard } from "../_auth";
 import { WorkspaceManagementService } from "./workspace.service";
+import { Request } from "express";
 
 @Controller("/")
+@UseGuards(GridaAccountAuthGuard)
 export class WorkspaceManagementController {
   constructor(private readonly service: WorkspaceManagementService) {}
 
   @Get("/")
-  listWorkspaces() {
-    const userid = ""; // TODO: add auth
+  listWorkspaces(@Req() req: Request) {
     return this.service.me({
-      // TODO:
-      // @ts-ignore
-      user: { uid: userid },
+      user: { uid: req.account.id, username: req.account.username },
     });
   }
 

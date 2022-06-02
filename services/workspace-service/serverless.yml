@@ -1,5 +1,5 @@
 service:
-  name: workspace-service
+  name: workspaces-services
 
 useDotenv: true
 
@@ -12,7 +12,7 @@ plugins:
 
 custom:
   customDomain:
-    domainName: workspace-services.grida.co
+    domainName: workspaces.services.grida.co
     hostedZoneId: us-west-1
     basePath: ""
     stage: production

@@ -86,6 +86,8 @@ model MemberOnWorkspace {
   // #region profile
   profile     MemberProfile
   // #endregion profile
+
+  @@unique([workspaceID, userID])
 }
 
 type MemberProfile {
