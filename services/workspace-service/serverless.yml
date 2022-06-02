@@ -1,18 +1,17 @@
-service:
-  name: workspaces-services
+service: workspaces-services
 
 useDotenv: true
 
 plugins:
-  - serverless-dotenv-plugin
-  - "@hewmen/serverless-plugin-typescript"
-  - serverless-plugin-optimize
+  - serverless-webpack
+  - serverless-webpack-prisma
   - serverless-offline
   - serverless-domain-manager
 
 custom:
   customDomain:
     domainName: workspaces.services.grida.co
+    certificateName: "*.workspaces.services.grida.co"
     hostedZoneId: us-west-1
     basePath: ""
     stage: production
@@ -36,6 +35,9 @@ functions:
   main:
     handler: src/lambda.handler
     events:
+      - http:
+          method: GET
+          path: /
       - http:
           method: any
           path: /{proxy+}
