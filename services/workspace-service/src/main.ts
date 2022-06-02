@@ -1,12 +1,7 @@
-import { ValidationPipe } from "@nestjs/common";
-import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
-import cookieParser from "cookie-parser";
+import { initApp } from "./app";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.use(cookieParser());
-  app.useGlobalPipes(new ValidationPipe());
+  const app = await initApp();
   app.listen(4401, () => console.log("Microservice is listening"));
 }
 bootstrap();

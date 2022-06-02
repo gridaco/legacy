@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common";
 import { WorkspaceCreateService } from "./create.service";
 import { WorkspaceCreateController } from "./create.controller";
-import { PrismaService } from "../_prisma";
+import { PrismaModule, PrismaService } from "../_prisma";
 
 @Module({
-  imports: [],
+  imports: [PrismaModule],
   controllers: [WorkspaceCreateController],
-  providers: [PrismaService, WorkspaceCreateService],
+  providers: [WorkspaceCreateService, PrismaService],
 })
 export class WorkspaceCreateModule {}
